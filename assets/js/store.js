@@ -1,12 +1,13 @@
 /**
- * BrannnXD - Data Store & LocalStorage Manager
- * Production-ready catalog store, localStorage persistence, and Telegram order routing.
+ * BrannnXD - Data Store & LocalStorage Manager (Production with QRIS & Invoice)
+ * Production-ready catalog store, localStorage persistence, QRIS metadata, and Invoice generator.
  */
 
 const STORAGE_KEYS = {
   PRODUCTS: 'brannnxd_products_v2',
   SETTINGS: 'brannnxd_settings_v2',
-  AUTH: 'brannnxd_auth_session'
+  AUTH: 'brannnxd_auth_session',
+  INVOICES: 'brannnxd_invoices_v1'
 };
 
 // Official Store Settings
@@ -16,7 +17,14 @@ const DEFAULT_SETTINGS = {
   tagline: 'Platform Resmi Produk Digital, Bot WhatsApp & Cloud Workstation',
   ownerPasswordHash: 'brannn123',
   currencySymbol: 'Rp',
-  announcement: '🔥 Ready Stock Semua Produk Digital! Pemesanan Instan Langsung ke Telegram @brannnn22'
+  announcement: '🔥 Pembayaran Resmi via QRIS (BRANN DIGITAL HUB) • Konfirmasi Instan ke Telegram @brannnn22',
+  qris: {
+    merchantName: 'BRANN DIGITAL HUB, DIGITAL & KREATIF',
+    nmid: 'ID1026607305962',
+    printedBy: '93600914',
+    code: 'A01',
+    image: 'assets/images/qris-brann.png'
+  }
 };
 
 // Curated High-Grade Products (BrannnXD Official Catalog)
@@ -161,12 +169,17 @@ class StoreManager {
   }
 
   init() {
-    // Migrate or initialize default products
     if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
       this.saveProducts(DEFAULT_PRODUCTS);
     }
     if (!localStorage.getItem(STORAGE_KEYS.SETTINGS)) {
       this.saveSettings(DEFAULT_SETTINGS);
+    } else {
+      // Ensure QRIS settings are attached
+      const current = this.getSettings();
+      if (!current.qris) {
+        this.saveSettings({ qris: DEFAULT_SETTINGS.qris });
+      }
     }
   }
 
@@ -253,12 +266,10 @@ class StoreManager {
   filterAndSortProducts(category = 'Semua', query = '', sortBy = 'popular') {
     let list = this.getActiveProducts();
 
-    // Category filter
     if (category && category !== 'Semua') {
       list = list.filter(p => p.category === category);
     }
 
-    // Search query filter
     if (query && query.trim() !== '') {
       const q = query.toLowerCase().trim();
       list = list.filter(p => 
@@ -269,7 +280,6 @@ class StoreManager {
       );
     }
 
-    // Sort order
     switch (sortBy) {
       case 'price-asc':
         list.sort((a, b) => a.price - b.price);
@@ -354,22 +364,62 @@ class StoreManager {
     return ['Semua', ...Array.from(categories)];
   }
 
-  getTelegramOrderUrl(product) {
+  // --- INVOICE GENERATOR ---
+  createInvoice(product) {
+    const now = new Date();
+    const invoiceNumber = 'INV-BXD-' + Math.floor(100000 + Math.random() * 900000);
+    const dateFormatted = now.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    const timeFormatted = now.toLocaleTimeString('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }) + ' WIB';
+
+    const invoice = {
+      invoiceNumber,
+      productId: product.id,
+      productName: product.name,
+      category: product.category,
+      price: product.price,
+      priceFormatted: this.formatRupiah(product.price),
+      deliveryType: product.deliveryType || 'Instan Delivery',
+      date: dateFormatted,
+      time: timeFormatted,
+      timestamp: now.toISOString(),
+      merchantName: DEFAULT_SETTINGS.qris.merchantName,
+      nmid: DEFAULT_SETTINGS.qris.nmid,
+      status: 'MENUNGGU VERIFIKASI OWNER'
+    };
+
+    return invoice;
+  }
+
+  getTelegramInvoiceUrl(invoice) {
     const settings = this.getSettings();
     const username = settings.telegramUsername.replace('@', '');
-    const priceFormatted = this.formatRupiah(product.price);
-    
+
     const message = 
-`Halo BrannnXD (@${username})! 👋
-Saya ingin order produk resmi dari website *${settings.storeName}*:
+`Halo Owner BrannnXD (@${username})! 👋
+Saya telah melakukan transfer pembayaran via QRIS untuk order berikut:
 
-📦 *Produk:* ${product.name}
-🏷️ *Kategori:* ${product.category}
-💰 *Total Harga:* ${priceFormatted}
+🧾 *NO. INVOICE:* ${invoice.invoiceNumber}
+📦 *Produk:* ${invoice.productName}
+🏷️ *Kategori:* ${invoice.category}
+💰 *Total Bayar:* ${invoice.priceFormatted}
+🕒 *Waktu Transaksi:* ${invoice.date}, ${invoice.time}
+🏦 *Merchant Tujuan:* ${invoice.merchantName} (${invoice.nmid})
 
-Mohon kirimkan nomor rekening / QRIS pembayaran manualnya ya cuyy. Siap transfer sekarang!`;
+Lampiran struk & bukti transfer telah saya siapkan di chat ini. Mohon segera diverifikasi untuk pengiriman akses/data produknya ya cuyy. Terima kasih!`;
 
     return `https://t.me/${username}?text=${encodeURIComponent(message)}`;
+  }
+
+  getTelegramOrderUrl(product) {
+    const invoice = this.createInvoice(product);
+    return this.getTelegramInvoiceUrl(invoice);
   }
 }
 

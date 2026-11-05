@@ -1,6 +1,7 @@
 /**
- * BrannnXD - Storefront Application Logic (Production)
- * Interactive UI, search, category filter, sorting, dynamic modal, clipboard, and Telegram order routing.
+ * BrannnXD - Storefront Application Logic (Production with QRIS & Struk Invoice)
+ * Interactive UI, search, category filter, sorting, dynamic QRIS payment modal,
+ * HTML5 Canvas Struk Invoice Generator, and Telegram order routing.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,9 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentCategory = 'Semua';
   let searchQuery = '';
   let currentSort = 'popular';
-  let activeModalProduct = null;
+  let activeProduct = null;
+  let activeInvoice = null;
 
-  // DOM Elements
+  // DOM Elements - Navigation & Search
   const productsGrid = document.getElementById('productsGrid');
   const emptyState = document.getElementById('emptyState');
   const categoryFilters = document.getElementById('categoryFilters');
@@ -22,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sortSelect = document.getElementById('sortSelect');
   const productCountBadge = document.getElementById('productCountBadge');
   
-  // Modal Elements
+  // Product Detail Modal Elements
   const productModal = document.getElementById('productModal');
   const modalCloseBtn = document.getElementById('modalCloseBtn');
   const modalImage = document.getElementById('modalImage');
@@ -35,8 +37,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalDeliveryTag = document.getElementById('modalDeliveryTag');
   const modalDescription = document.getElementById('modalDescription');
   const modalFeaturesList = document.getElementById('modalFeaturesList');
-  const modalTelegramOrderBtn = document.getElementById('modalTelegramOrderBtn');
-  const copyOrderTextBtn = document.getElementById('copyOrderTextBtn');
+  const modalPayQrisBtn = document.getElementById('modalPayQrisBtn');
+
+  // QRIS & Struk Modal Elements
+  const qrisModal = document.getElementById('qrisModal');
+  const qrisCloseBtn = document.getElementById('qrisCloseBtn');
+  const qrisStepPayment = document.getElementById('qrisStepPayment');
+  const qrisStepReceipt = document.getElementById('qrisStepReceipt');
+  const qrisProductTitle = document.getElementById('qrisProductTitle');
+  const qrisProductPrice = document.getElementById('qrisProductPrice');
+  const qrisMerchantName = document.getElementById('qrisMerchantName');
+  const qrisNmid = document.getElementById('qrisNmid');
+  const qrisImageEl = document.getElementById('qrisImageEl');
+  const downloadQrisImageBtn = document.getElementById('downloadQrisImageBtn');
+  const proceedToReceiptBtn = document.getElementById('proceedToReceiptBtn');
+  const backToPaymentBtn = document.getElementById('backToPaymentBtn');
+
+  // Struk View Elements
+  const strukInvoiceNo = document.getElementById('strukInvoiceNo');
+  const strukDateTime = document.getElementById('strukDateTime');
+  const strukProductName = document.getElementById('strukProductName');
+  const strukProductCategory = document.getElementById('strukProductCategory');
+  const strukDeliveryType = document.getElementById('strukDeliveryType');
+  const strukPrice = document.getElementById('strukPrice');
+  const strukMerchantName = document.getElementById('strukMerchantName');
+  const strukNmid = document.getElementById('strukNmid');
+  const downloadReceiptBtn = document.getElementById('downloadReceiptBtn');
+  const sendTelegramReceiptBtn = document.getElementById('sendTelegramReceiptBtn');
+  const copyInvoiceTextBtn = document.getElementById('copyInvoiceTextBtn');
 
   // Top & Floating Info Elements
   const announcementText = document.getElementById('announcementText');
@@ -124,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const filtered = store.filterAndSortProducts(currentCategory, searchQuery, currentSort);
 
     if (productCountBadge) {
-      productCountBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span> ${filtered.length} Produk Tersedia`;
+      productCountBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span> ${filtered.length} Produk Siap Order`;
     }
 
     if (filtered.length === 0) {
@@ -152,9 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         discountBadgeHtml = `<span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-extrabold px-2 py-0.5 rounded-full">-${discountPercent}%</span>`;
       }
 
-      const telegramUrl = store.getTelegramOrderUrl(p);
-
-      // Feature bullet snippets (up to 3 items)
+      // Feature bullet snippets
       const featureSnippets = p.features && p.features.length > 0 
         ? p.features.slice(0, 3).map(f => `
             <li class="flex items-center gap-2 text-xs text-slate-300">
@@ -178,14 +204,14 @@ document.addEventListener('DOMContentLoaded', () => {
             ${p.badge ? `<span class="shimmer-badge px-2.5 py-1 text-[10px] font-black rounded-lg bg-emerald-500 text-black uppercase tracking-wider">${p.badge}</span>` : ''}
           </div>
 
-          <!-- Sales / Status -->
+          <!-- Rating -->
           <div class="absolute top-3 right-3 bg-black/75 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5 text-[11px] text-amber-300 font-bold">
             <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
             <span>${p.rating || 5.0}</span>
             <span class="text-slate-500 font-normal">(${p.soldCount || 100}+)</span>
           </div>
 
-          <!-- Delivery tag bar at bottom of image -->
+          <!-- Delivery tag bar -->
           <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] text-slate-300 z-10">
             <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md border border-white/10 text-emerald-300 text-[10px] font-semibold">
               <i data-lucide="zap" class="w-3 h-3 text-emerald-400"></i> ${p.deliveryType || 'Instan Delivery'}
@@ -214,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="pt-2">
             <div class="flex items-baseline justify-between mb-4">
               <div>
-                <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-0.5">Harga Produk</span>
+                <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-0.5">Total Harga</span>
                 <div class="flex items-center gap-2">
                   <span class="text-xl sm:text-2xl font-black text-white font-heading">${priceFormatted}</span>
                   ${originalPriceHtml}
@@ -229,10 +255,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>Detail</span>
               </button>
 
-              <a href="${telegramUrl}" target="_blank" rel="noopener noreferrer" class="col-span-3 py-2.5 px-3 rounded-xl btn-telegram text-white text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 text-center cursor-pointer shadow-lg shadow-sky-500/20" title="Beli langsung via Telegram @${cleanTelegram}">
-                <i data-lucide="send" class="w-3.5 h-3.5"></i>
-                <span>Beli via Telegram</span>
-              </a>
+              <button onclick="window.openQrisPayment('${p.id}')" class="col-span-3 py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black text-xs font-black transition-all flex items-center justify-center gap-1.5 text-center cursor-pointer shadow-lg shadow-emerald-500/20" title="Beli langsung via QRIS & Dapatkan Struk">
+                <i data-lucide="qr-code" class="w-3.5 h-3.5 text-black"></i>
+                <span>Beli via QRIS</span>
+              </button>
             </div>
           </div>
         </div>
@@ -250,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.openDetailModal = function(id) {
     const product = store.getProductById(id);
     if (!product) return;
-    activeModalProduct = product;
+    activeProduct = product;
 
     modalImage.src = product.image;
     modalCategory.textContent = product.category;
@@ -259,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalPrice.textContent = store.formatRupiah(product.price);
 
     if (modalDeliveryTag) {
-      modalDeliveryTag.textContent = product.deliveryType || 'Instan Delivery via Telegram';
+      modalDeliveryTag.textContent = product.deliveryType || 'Instan Delivery';
     }
 
     if (product.originalPrice && product.originalPrice > product.price) {
@@ -294,45 +320,292 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Set Telegram order URL
-    const telegramUrl = store.getTelegramOrderUrl(product);
-    modalTelegramOrderBtn.href = telegramUrl;
-
-    // Copy Order Format Text Button
-    if (copyOrderTextBtn) {
-      copyOrderTextBtn.onclick = () => {
-        const formatText = `Halo BrannnXD (@${cleanTelegram}), saya mau pesan ${product.name} seharga ${store.formatRupiah(product.price)}. Mohon info QRIS / Rekening manualnya.`;
-        navigator.clipboard.writeText(formatText).then(() => {
-          showToast('Format pesan berhasil disalin ke clipboard!', 'clipboard');
-        });
+    // Set Pay QRIS button inside detail modal
+    if (modalPayQrisBtn) {
+      modalPayQrisBtn.onclick = () => {
+        closeDetailModal();
+        window.openQrisPayment(product.id);
       };
     }
 
-    // Show Modal
     productModal.classList.add('active');
     document.body.style.overflow = 'hidden';
 
-    if (window.lucide) {
-      window.lucide.createIcons();
-    }
+    if (window.lucide) window.lucide.createIcons();
   };
 
-  // Close Product Detail Modal
-  function closeModal() {
+  function closeDetailModal() {
     productModal.classList.remove('active');
     document.body.style.overflow = '';
   }
 
-  if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
+  if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeDetailModal);
   if (productModal) {
     productModal.addEventListener('click', (e) => {
-      if (e.target === productModal) closeModal();
+      if (e.target === productModal) closeDetailModal();
     });
   }
 
-  // Keyboard Escape
+  // ================= QRIS & STRUK INVOICE PAYMENT FLOW =================
+  window.openQrisPayment = function(id) {
+    const product = store.getProductById(id);
+    if (!product) return;
+    activeProduct = product;
+
+    // Generate real invoice
+    activeInvoice = store.createInvoice(product);
+
+    // Setup QRIS Step View
+    const qrisInfo = settings.qris || {
+      merchantName: 'BRANN DIGITAL HUB, DIGITAL & KREATIF',
+      nmid: 'ID1026607305962',
+      image: 'assets/images/qris-brann.png'
+    };
+
+    if (qrisProductTitle) qrisProductTitle.textContent = product.name;
+    if (qrisProductPrice) qrisProductPrice.textContent = store.formatRupiah(product.price);
+    if (qrisMerchantName) qrisMerchantName.textContent = qrisInfo.merchantName;
+    if (qrisNmid) qrisNmid.textContent = `NMID: ${qrisInfo.nmid}`;
+    if (qrisImageEl) qrisImageEl.src = qrisInfo.image;
+
+    // Show Step 1: Payment, Hide Step 2: Struk
+    qrisStepPayment.classList.remove('hidden');
+    qrisStepReceipt.classList.add('hidden');
+
+    qrisModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  function closeQrisModal() {
+    qrisModal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  if (qrisCloseBtn) qrisCloseBtn.addEventListener('click', closeQrisModal);
+  if (qrisModal) {
+    qrisModal.addEventListener('click', (e) => {
+      if (e.target === qrisModal) closeQrisModal();
+    });
+  }
+
+  // Download QRIS Image
+  if (downloadQrisImageBtn) {
+    downloadQrisImageBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'QRIS-BRANN-DIGITAL-HUB.png';
+      link.href = settings.qris?.image || 'assets/images/qris-brann.png';
+      link.click();
+      showToast('Gambar QRIS berhasil didownload!');
+    });
+  }
+
+  // Proceed to Step 2: Struk / Invoice
+  if (proceedToReceiptBtn) {
+    proceedToReceiptBtn.addEventListener('click', () => {
+      if (!activeInvoice) return;
+
+      // Populate Struk Info
+      if (strukInvoiceNo) strukInvoiceNo.textContent = activeInvoice.invoiceNumber;
+      if (strukDateTime) strukDateTime.textContent = `${activeInvoice.date}, ${activeInvoice.time}`;
+      if (strukProductName) strukProductName.textContent = activeInvoice.productName;
+      if (strukProductCategory) strukProductCategory.textContent = activeInvoice.category;
+      if (strukDeliveryType) strukDeliveryType.textContent = activeInvoice.deliveryType;
+      if (strukPrice) strukPrice.textContent = activeInvoice.priceFormatted;
+      if (strukMerchantName) strukMerchantName.textContent = activeInvoice.merchantName;
+      if (strukNmid) strukNmid.textContent = `NMID: ${activeInvoice.nmid}`;
+
+      // Set Telegram link
+      const telegramUrl = store.getTelegramInvoiceUrl(activeInvoice);
+      if (sendTelegramReceiptBtn) sendTelegramReceiptBtn.href = telegramUrl;
+
+      // Switch views
+      qrisStepPayment.classList.add('hidden');
+      qrisStepReceipt.classList.remove('hidden');
+
+      if (window.lucide) window.lucide.createIcons();
+    });
+  }
+
+  // Back to Payment from Struk
+  if (backToPaymentBtn) {
+    backToPaymentBtn.addEventListener('click', () => {
+      qrisStepPayment.classList.remove('hidden');
+      qrisStepReceipt.classList.add('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    });
+  }
+
+  // ================= CANVAS STRUK GENERATOR & DOWNLOADER =================
+  function generateReceiptCanvas(invoice) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 640;
+    canvas.height = 920;
+    const ctx = canvas.getContext('2d');
+
+    // Background Dark Slate
+    ctx.fillStyle = '#0a0e17';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Outer Border Glow
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.45)';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(18, 18, canvas.width - 36, canvas.height - 36);
+
+    // Decorative Header Tag
+    ctx.fillStyle = '#10b981';
+    ctx.font = '900 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('BRANNNXD DIGITAL STORE', 320, 75);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 13px sans-serif';
+    ctx.fillText('STRUK BUKTI PEMESANAN & TRANSAKSI RESMI', 320, 105);
+
+    // Merchant Info Box
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.fillRect(40, 125, 560, 65);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.strokeRect(40, 125, 560, 65);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillText(invoice.merchantName, 320, 152);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '13px monospace';
+    ctx.fillText('NMID: ' + invoice.nmid + ' • GPN QRIS A01', 320, 175);
+
+    // Dashed divider line
+    const drawDashedLine = (y) => {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.moveTo(40, y);
+      ctx.lineTo(600, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    };
+
+    drawDashedLine(215);
+
+    // Key-Value rows
+    const drawRow = (label, val, y, isGreen = false) => {
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '14px sans-serif';
+      ctx.fillText(label, 45, y);
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = isGreen ? '#34d399' : '#ffffff';
+      ctx.font = isGreen ? 'bold 17px monospace' : 'bold 14px monospace';
+      ctx.fillText(val, 595, y);
+    };
+
+    drawRow('NO. INVOICE', invoice.invoiceNumber, 255, true);
+    drawRow('WAKTU PESANAN', `${invoice.date}, ${invoice.time}`, 295);
+    drawRow('METODE BAYAR', 'QRIS (Bank & E-Wallet)', 335);
+    drawRow('STATUS KIRIM', invoice.deliveryType, 375);
+
+    drawDashedLine(410);
+
+    // Item Info
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#64748b';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText('RINCIAN PRODUK DIGITAL:', 45, 445);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText(invoice.productName, 45, 478);
+
+    ctx.fillStyle = '#06b6d4';
+    ctx.font = '13px sans-serif';
+    ctx.fillText('Kategori: ' + invoice.category, 45, 506);
+
+    drawDashedLine(540);
+
+    // Total Amount Row
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 18px sans-serif';
+    ctx.fillText('TOTAL TRANSFER:', 45, 585);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#34d399';
+    ctx.font = '900 28px monospace';
+    ctx.fillText(invoice.priceFormatted, 595, 585);
+
+    // Verification Status Banner
+    ctx.fillStyle = 'rgba(234, 179, 8, 0.12)';
+    ctx.fillRect(45, 625, 550, 52);
+    ctx.strokeStyle = 'rgba(234, 179, 8, 0.4)';
+    ctx.strokeRect(45, 625, 550, 52);
+
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⏳ STATUS: MENUNGGU VERIFIKASI OWNER', 320, 657);
+
+    // Important Notice Box
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '13px sans-serif';
+    ctx.fillText('MOHON SERTAKAN STRUK INI & BUKTI TRANSFER KE TELEGRAM:', 320, 715);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 18px monospace';
+    ctx.fillText('@brannnn22 (t.me/brannnn22)', 320, 745);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Owner akan memberikan file / akses produk setelah bukti & struk terverifikasi.', 320, 785);
+
+    // Footer Copyright
+    ctx.fillStyle = '#334155';
+    ctx.font = '11px sans-serif';
+    ctx.fillText('Simpan struk ini sebagai referensi resmi transaksi Anda • BrannnXD Store', 320, 875);
+
+    return canvas;
+  }
+
+  // Handle Download Struk Button
+  if (downloadReceiptBtn) {
+    downloadReceiptBtn.addEventListener('click', () => {
+      if (!activeInvoice) return;
+      const canvas = generateReceiptCanvas(activeInvoice);
+      const link = document.createElement('a');
+      link.download = `STRUK-${activeInvoice.invoiceNumber}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('Gambar Struk Pembelian berhasil didownload!', 'download');
+    });
+  }
+
+  // Handle Copy Invoice Text
+  if (copyInvoiceTextBtn) {
+    copyInvoiceTextBtn.addEventListener('click', () => {
+      if (!activeInvoice) return;
+      const text = 
+`🧾 STRUK PEMBELIAN BRANNNXD
+No. Invoice: ${activeInvoice.invoiceNumber}
+Produk: ${activeInvoice.productName}
+Harga: ${activeInvoice.priceFormatted}
+Waktu: ${activeInvoice.date}, ${activeInvoice.time}
+Merchant: ${activeInvoice.merchantName} (${activeInvoice.nmid})
+Status: Menunggu Verifikasi Owner di Telegram @brannnn22`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Rincian invoice berhasil disalin!', 'copy');
+      });
+    });
+  }
+
+  // Keyboard Escape for modals
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Escape') {
+      closeDetailModal();
+      closeQrisModal();
+    }
   });
 
   // Search Input Handlers
