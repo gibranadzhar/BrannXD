@@ -1,6 +1,6 @@
 /**
- * BrannnXD - Owner / Admin Dashboard Logic
- * Authentication, Product CRUD, Image Upload (Base64/URL), Settings & Backup.
+ * BrannnXD - Owner / Admin Dashboard Logic (Production)
+ * Authentication, Product CRUD, Image Upload, Search & Backup.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Product Table & Form Elements
   const productTableBody = document.getElementById('productTableBody');
+  const adminProductSearch = document.getElementById('adminProductSearch');
   const productModal = document.getElementById('productModal');
   const productModalTitle = document.getElementById('productModalTitle');
   const productForm = document.getElementById('productForm');
@@ -41,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const formProductPrice = document.getElementById('formProductPrice');
   const formProductOriginalPrice = document.getElementById('formProductOriginalPrice');
   const formProductBadge = document.getElementById('formProductBadge');
+  const formProductDeliveryType = document.getElementById('formProductDeliveryType');
   const formProductStatus = document.getElementById('formProductStatus');
   const formProductDescription = document.getElementById('formProductDescription');
   const formProductFeatures = document.getElementById('formProductFeatures');
@@ -65,11 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const importJsonInput = document.getElementById('importJsonInput');
   const resetDefaultBtn = document.getElementById('resetDefaultBtn');
 
+  // Search Filter State
+  let tableSearchQuery = '';
+
   // Toast Notification
   function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     const bgClass = type === 'success' ? 'bg-emerald-500 text-black font-semibold' : 'bg-rose-500 text-white font-semibold';
-    toast.className = `fixed bottom-5 right-5 z-50 px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform translate-y-2 opacity-0 transition-all duration-300 ${bgClass}`;
+    toast.className = `fixed bottom-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 transform translate-y-2 opacity-0 transition-all duration-300 ${bgClass}`;
     toast.innerHTML = `
       <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i>
       <span>${message}</span>
@@ -115,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         if (loginErrorMsg) {
           loginErrorMsg.classList.remove('hidden');
-          loginErrorMsg.textContent = 'Password salah! Default password adalah "brannn123"';
+          loginErrorMsg.textContent = 'Password salah! Silakan coba lagi.';
         }
       }
     });
@@ -154,6 +159,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Table Search Filter
+  if (adminProductSearch) {
+    adminProductSearch.addEventListener('input', (e) => {
+      tableSearchQuery = e.target.value.toLowerCase().trim();
+      renderProductTable();
+    });
+  }
+
   // Load Dashboard Data & Stats
   function loadDashboard() {
     const products = store.getProducts();
@@ -173,14 +186,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // Render Product Table
   function renderProductTable() {
     if (!productTableBody) return;
-    const products = store.getProducts();
+    let products = store.getProducts();
+
+    if (tableSearchQuery) {
+      products = products.filter(p => 
+        p.name.toLowerCase().includes(tableSearchQuery) ||
+        p.category.toLowerCase().includes(tableSearchQuery) ||
+        (p.badge && p.badge.toLowerCase().includes(tableSearchQuery))
+      );
+    }
+
     productTableBody.innerHTML = '';
 
     if (products.length === 0) {
       productTableBody.innerHTML = `
         <tr>
           <td colspan="6" class="text-center py-12 text-slate-400 text-sm">
-            Belum ada produk di katalog. Klik <b>"+ Tambah Produk"</b> untuk memulai.
+            ${tableSearchQuery ? 'Tidak ada produk yang cocok dengan pencarian.' : 'Belum ada produk di katalog. Klik <b>"+ Tambah Produk"</b> untuk memulai.'}
           </td>
         </tr>
       `;
@@ -199,23 +221,29 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="py-3.5 px-4 text-xs text-slate-500 font-mono">${idx + 1}</td>
         <td class="py-3.5 px-4">
           <div class="flex items-center gap-3">
-            <img src="${p.image}" alt="${p.name}" class="w-11 h-11 rounded-lg object-cover bg-slate-800 border border-white/10 shrink-0" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=200&q=80'" />
+            <img src="${p.image}" alt="${p.name}" class="w-12 h-12 rounded-xl object-cover bg-slate-800 border border-white/10 shrink-0" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=200&q=80'" />
             <div>
               <div class="text-sm font-bold text-white line-clamp-1">${p.name}</div>
-              <div class="text-[11px] text-slate-400">${p.badge ? `<span class="text-emerald-400 font-semibold">[${p.badge}]</span> ` : ''}${p.category}</div>
+              <div class="text-[11px] text-slate-400">${p.badge ? `<span class="text-emerald-400 font-bold">[${p.badge}]</span> ` : ''}${p.category}</div>
             </div>
           </div>
         </td>
         <td class="py-3.5 px-4 text-xs font-semibold text-emerald-400 whitespace-nowrap">
           ${store.formatRupiah(p.price)}
-          ${p.originalPrice ? `<div class="text-[10px] text-slate-500 line-through">${store.formatRupiah(p.originalPrice)}</div>` : ''}
+          ${p.originalPrice ? `<div class="text-[10px] text-slate-500 line-through font-mono">${store.formatRupiah(p.originalPrice)}</div>` : ''}
         </td>
         <td class="py-3.5 px-4 text-xs whitespace-nowrap">${statusBadge}</td>
-        <td class="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
-          ${p.features ? `${p.features.length} Fitur` : '0 Fitur'}
+        <td class="py-3.5 px-4 text-xs text-slate-300 whitespace-nowrap">
+          <span class="inline-flex items-center gap-1 text-[11px] bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
+            <i data-lucide="zap" class="w-3 h-3 text-cyan-400"></i>
+            ${p.deliveryType || 'Instan Delivery'}
+          </span>
         </td>
         <td class="py-3.5 px-4 text-right whitespace-nowrap">
           <div class="flex items-center justify-end gap-1.5">
+            <a href="${store.getTelegramOrderUrl(p)}" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 transition-colors cursor-pointer" title="Cek Link Order Telegram">
+              <i data-lucide="send" class="w-4 h-4"></i>
+            </a>
             <button onclick="window.editProduct('${p.id}')" class="p-2 rounded-lg bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-300 transition-colors cursor-pointer" title="Edit Produk">
               <i data-lucide="edit-3" class="w-4 h-4"></i>
             </button>
@@ -274,6 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
     formProductId.value = '';
     productModalTitle.textContent = 'Tambah Produk Baru';
     formProductStatus.value = 'active';
+    if (formProductDeliveryType) formProductDeliveryType.value = 'Instan Delivery';
     updateImagePreview('');
     productModal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -291,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
     formProductPrice.value = product.price;
     formProductOriginalPrice.value = product.originalPrice || '';
     formProductBadge.value = product.badge || '';
+    if (formProductDeliveryType) formProductDeliveryType.value = product.deliveryType || 'Instan Delivery';
     formProductStatus.value = product.status || 'active';
     formProductDescription.value = product.description;
     formProductFeatures.value = Array.isArray(product.features) ? product.features.join('\n') : '';
@@ -337,6 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
         price: Number(formProductPrice.value),
         originalPrice: formProductOriginalPrice.value ? Number(formProductOriginalPrice.value) : null,
         badge: formProductBadge.value.trim().toUpperCase(),
+        deliveryType: formProductDeliveryType ? formProductDeliveryType.value.trim() : 'Instan Delivery',
         status: formProductStatus.value,
         description: formProductDescription.value.trim(),
         features: formProductFeatures.value.split('\n').map(s => s.trim()).filter(Boolean),
@@ -406,9 +437,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (store.changeOwnerPassword(oldPwd, newPwd)) {
         changePasswordForm.reset();
-        showToast('Password Owner berhasil diubah! Ingat baik-baik ya.');
+        showToast('Password Owner berhasil diubah!');
       } else {
-        alert('Password lama salah cuyy!');
+        alert('Password lama salah!');
       }
     });
   }
@@ -426,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `brannnxd-catalog-backup-${Date.now()}.json`;
+      a.download = `brannnxd-catalog-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
       showToast('File backup JSON berhasil didownload!');
@@ -466,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resetDefaultBtn.addEventListener('click', () => {
       if (confirm('YAKIN mau reset semua produk ke katalog bawaan BrannnXD? Data produk custom kamu akan tertimpa.')) {
         store.resetProductsToDefault();
-        showToast('Katalog berhasil direset ke bawaan!');
+        showToast('Katalog berhasil direset!');
         loadDashboard();
       }
     });

@@ -55,17 +55,17 @@
   <div id="loginSection" class="flex-1 flex items-center justify-center p-4 bg-grid-pattern relative">
     <div class="absolute w-[450px] h-[350px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none"></div>
 
-    <div class="glass-panel w-full max-w-md p-8 rounded-3xl border border-white/10 shadow-2xl relative z-10 bg-[#0e121b]">
+    <div class="glass-panel w-full max-w-md p-8 sm:p-10 rounded-3xl border border-white/10 shadow-2xl relative z-10 bg-[#0e121b]">
       
       <!-- Header -->
       <div class="text-center mb-8">
-        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/20">
-          <i data-lucide="shield-check" class="w-7 h-7 text-black"></i>
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-400 flex items-center justify-center mx-auto mb-4 shadow-xl shadow-emerald-500/20">
+          <i data-lucide="shield-lock" class="w-7 h-7 text-black"></i>
         </div>
         <h1 class="text-2xl font-extrabold text-white tracking-tight font-heading">
           Owner Portal <span class="text-emerald-400">BrannnXD</span>
         </h1>
-        <p class="text-xs text-slate-400 mt-1">Masukkan password owner untuk mengelola katalog produk.</p>
+        <p class="text-xs text-slate-400 mt-1.5">Sistem Manajemen & Kontrol Katalog Resmi</p>
       </div>
 
       <!-- Login Form -->
@@ -77,20 +77,19 @@
             <input 
               type="password" 
               id="loginPassword" 
-              placeholder="Masukkan password..." 
+              placeholder="Masukkan password admin..." 
               required
               class="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
             />
           </div>
-          <div id="loginErrorMsg" class="hidden text-xs text-rose-400 mt-1.5 font-medium"></div>
+          <div id="loginErrorMsg" class="hidden text-xs text-rose-400 mt-2 font-medium"></div>
         </div>
 
         <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
-          <label class="flex items-center gap-2 cursor-pointer">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
             <input type="checkbox" id="rememberMeCheck" class="rounded bg-black/40 border-white/10 text-emerald-500 focus:ring-0">
-            <span>Ingat di browser ini</span>
+            <span>Tetap masuk di browser ini</span>
           </label>
-          <span class="text-[11px] text-slate-500">Default: <code class="text-emerald-400">brannn123</code></span>
         </div>
 
         <button 
@@ -98,14 +97,14 @@
           class="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer mt-4"
         >
           <i data-lucide="unlock" class="w-4 h-4"></i>
-          <span>Masuk ke Dashboard</span>
+          <span>Buka Dashboard Owner</span>
         </button>
       </form>
 
-      <div class="mt-6 pt-6 border-t border-white/5 text-center">
+      <div class="mt-8 pt-6 border-t border-white/5 text-center">
         <a href="index.html" class="text-xs text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-1.5">
           <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-          <span>Kembali ke Website Storefront</span>
+          <span>Kembali ke Halaman Storefront</span>
         </a>
       </div>
 
@@ -116,7 +115,7 @@
   <!-- ================= DASHBOARD MAIN SECTION ================= -->
   <div id="adminDashboard" class="hidden flex-1 flex flex-col">
     
-    <!-- Top Navigation -->
+    <!-- Top Navigation Header -->
     <header class="sticky top-0 z-40 backdrop-blur-xl bg-[#080a0f]/85 border-b border-white/5">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         
@@ -127,21 +126,21 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="font-heading font-extrabold text-lg text-white">Owner Portal</span>
-              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-widest">OWNER CMS</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-widest">LIVE CMS</span>
             </div>
-            <span class="text-[11px] text-slate-400 block -mt-0.5">Kelola Produk & Data BrannnXD</span>
+            <span class="text-[11px] text-slate-400 block -mt-0.5 font-medium">Pengelolaan Katalog & Produk BrannnXD</span>
           </div>
         </div>
 
         <div class="flex items-center gap-3">
           <a href="index.html" target="_blank" class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-all flex items-center gap-1.5">
             <i data-lucide="external-link" class="w-3.5 h-3.5 text-cyan-400"></i>
-            <span>Lihat Website</span>
+            <span>Buka Website</span>
           </a>
 
           <button id="logoutBtn" class="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold border border-rose-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
             <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-            <span>Logout</span>
+            <span>Keluar</span>
           </button>
         </div>
 
@@ -165,7 +164,7 @@
 
         <div class="glass-panel p-5 rounded-2xl border border-white/5 flex items-center justify-between">
           <div>
-            <div class="text-xs text-slate-400 font-medium mb-1">Produk Aktif</div>
+            <div class="text-xs text-slate-400 font-medium mb-1">Produk Aktif Publik</div>
             <div id="statActiveProducts" class="text-2xl font-extrabold text-emerald-400 font-heading">0</div>
           </div>
           <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
@@ -175,7 +174,7 @@
 
         <div class="glass-panel p-5 rounded-2xl border border-white/5 flex items-center justify-between">
           <div>
-            <div class="text-xs text-slate-400 font-medium mb-1">Nilai Total Katalog</div>
+            <div class="text-xs text-slate-400 font-medium mb-1">Total Nilai Katalog</div>
             <div id="statTotalValue" class="text-lg sm:text-xl font-extrabold text-cyan-400 font-heading">Rp 0</div>
           </div>
           <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
@@ -198,11 +197,11 @@
       <div class="flex items-center gap-2 border-b border-white/10 pb-4 mb-6 overflow-x-auto scrollbar-none">
         <button data-tab="products" class="admin-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 flex items-center gap-2 cursor-pointer whitespace-nowrap">
           <i data-lucide="boxes" class="w-4 h-4"></i>
-          <span>Manajemen Produk</span>
+          <span>Katalog Produk</span>
         </button>
         <button data-tab="settings" class="admin-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-transparent text-slate-400 hover:text-white flex items-center gap-2 cursor-pointer whitespace-nowrap">
           <i data-lucide="sliders" class="w-4 h-4"></i>
-          <span>Pengaturan Toko & Akun</span>
+          <span>Pengaturan & Akun</span>
         </button>
         <button data-tab="backup" class="admin-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-transparent text-slate-400 hover:text-white flex items-center gap-2 cursor-pointer whitespace-nowrap">
           <i data-lucide="database" class="w-4 h-4"></i>
@@ -213,13 +212,19 @@
       <!-- ================= TAB 1: PRODUCT MANAGEMENT ================= -->
       <div id="tab-products" class="admin-tab-content space-y-4">
         
-        <!-- Table Action Bar -->
+        <!-- Action Bar & Table Search -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 class="text-lg font-bold text-white">Daftar Produk Katalog</h2>
-            <p class="text-xs text-slate-400">Kelola semua produk yang tampil di website BrannnXD.</p>
+          <div class="relative w-full sm:w-80">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input 
+              type="text" 
+              id="adminProductSearch" 
+              placeholder="Cari produk di tabel..." 
+              class="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500"
+            />
           </div>
-          <button id="openAddProductBtn" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
+
+          <button id="openAddProductBtn" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0">
             <i data-lucide="plus" class="w-4 h-4"></i>
             <span>Tambah Produk Baru</span>
           </button>
@@ -232,10 +237,10 @@
               <thead>
                 <tr class="border-b border-white/5 bg-black/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                   <th class="py-3 px-4 w-12">#</th>
-                  <th class="py-3 px-4">Produk</th>
+                  <th class="py-3 px-4">Informasi Produk</th>
                   <th class="py-3 px-4">Harga</th>
                   <th class="py-3 px-4">Status</th>
-                  <th class="py-3 px-4">Spesifikasi</th>
+                  <th class="py-3 px-4">Pengiriman</th>
                   <th class="py-3 px-4 text-right">Aksi</th>
                 </tr>
               </thead>
@@ -253,12 +258,12 @@
       <div id="tab-settings" class="admin-tab-content hidden space-y-6 max-w-3xl">
         
         <!-- Profile & Store Details -->
-        <div class="glass-panel p-6 rounded-2xl border border-white/5">
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-white/5">
           <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
             <i data-lucide="store" class="w-4 h-4 text-emerald-400"></i>
-            <span>Identitas Toko & Telegram</span>
+            <span>Identitas Toko & Kontak Telegram</span>
           </h3>
-          <p class="text-xs text-slate-400 mb-6">Ubah informasi kontak Telegram tempat pembeli memesan produk.</p>
+          <p class="text-xs text-slate-400 mb-6">Ubah informasi kontak Telegram tempat pembeli memesan produk secara langsung.</p>
 
           <form id="settingsForm" class="space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -287,7 +292,7 @@
             </div>
 
             <div class="pt-2">
-              <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs sm:text-sm transition-all cursor-pointer">
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs sm:text-sm transition-all cursor-pointer">
                 Simpan Perubahan Toko
               </button>
             </div>
@@ -295,17 +300,17 @@
         </div>
 
         <!-- Security / Password Change -->
-        <div class="glass-panel p-6 rounded-2xl border border-white/5">
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-white/5">
           <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
             <i data-lucide="key-round" class="w-4 h-4 text-cyan-400"></i>
             <span>Ganti Password Owner</span>
           </h3>
-          <p class="text-xs text-slate-400 mb-6">Ubah kata sandi untuk masuk ke Owner Portal ini.</p>
+          <p class="text-xs text-slate-400 mb-6">Ubah kata sandi untuk masuk ke Owner Portal ini secara berkala.</p>
 
           <form id="changePasswordForm" class="space-y-4">
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password Lama</label>
-              <input type="password" id="oldPasswordInput" required placeholder="Default: brannn123" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+              <input type="password" id="oldPasswordInput" required placeholder="Masukkan password saat ini" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -321,7 +326,7 @@
             </div>
 
             <div class="pt-2">
-              <button type="submit" class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs sm:text-sm transition-all cursor-pointer">
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs sm:text-sm transition-all cursor-pointer">
                 Perbarui Password
               </button>
             </div>
@@ -334,13 +339,13 @@
       <!-- ================= TAB 3: BACKUP & DATABASE ================= -->
       <div id="tab-backup" class="admin-tab-content hidden space-y-6 max-w-3xl">
         
-        <div class="glass-panel p-6 rounded-2xl border border-white/5 space-y-6">
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-white/5 space-y-6">
           <div>
             <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
               <i data-lucide="download-cloud" class="w-4 h-4 text-emerald-400"></i>
               <span>Export & Backup Data Produk</span>
             </h3>
-            <p class="text-xs text-slate-400">Download seluruh katalog produk dan konfigurasi toko sebagai file JSON yang dapat disimpan di komputer kamu.</p>
+            <p class="text-xs text-slate-400">Simpan seluruh katalog produk dan konfigurasi toko sebagai file JSON yang aman di komputer kamu.</p>
             <button id="exportJsonBtn" class="mt-4 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs sm:text-sm font-semibold border border-white/10 transition-all flex items-center gap-2 cursor-pointer">
               <i data-lucide="download" class="w-4 h-4"></i>
               <span>Download Backup JSON</span>
@@ -369,10 +374,10 @@
               <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i>
               <span>Reset ke Katalog Bawaan</span>
             </h3>
-            <p class="text-xs text-slate-400 mb-4">Kembalikan daftar produk ke sampel awal BrannnXD (6 produk starter). Gunakan jika ingin membersihkan data uji coba.</p>
+            <p class="text-xs text-slate-400 mb-4">Kembalikan daftar produk ke format resmi awal BrannnXD (6 produk starter).</p>
             <button id="resetDefaultBtn" class="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs sm:text-sm font-semibold border border-rose-500/20 transition-all flex items-center gap-2 cursor-pointer">
               <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-              <span>Reset Katalog ke Default</span>
+              <span>Reset Katalog ke Standar</span>
             </button>
           </div>
         </div>
@@ -392,7 +397,7 @@
       <div class="p-6 border-b border-white/5 flex items-center justify-between">
         <div>
           <h2 id="productModalTitle" class="text-lg font-bold text-white font-heading">Tambah Produk Baru</h2>
-          <p class="text-xs text-slate-400">Isi detail lengkap produk untuk ditampilkan di katalog.</p>
+          <p class="text-xs text-slate-400">Isi detail lengkap produk untuk langsung tampil di website.</p>
         </div>
         <button id="closeProductModalBtn" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer">
           <i data-lucide="x" class="w-4 h-4"></i>
@@ -406,7 +411,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nama Produk *</label>
-            <input type="text" id="formProductName" required placeholder="Contoh: WhatsApp Bot Multi-Device" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+            <input type="text" id="formProductName" required placeholder="Contoh: WhatsApp Bot Multi-Device v5" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
           </div>
 
           <div>
@@ -429,13 +434,28 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Harga Coret / Asli (Opsional)</label>
-            <input type="number" id="formProductOriginalPrice" min="0" placeholder="120000" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Harga Normal/Coret (Opsional)</label>
+            <input type="number" id="formProductOriginalPrice" min="0" placeholder="125000" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1.5">Badge / Tag (Opsional)</label>
-            <input type="text" id="formProductBadge" placeholder="BEST SELLER / PROMO" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+            <input type="text" id="formProductBadge" placeholder="BEST SELLER / EXCLUSIVE" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Status Pengiriman</label>
+            <input type="text" id="formProductDeliveryType" placeholder="Instan Delivery / Akses GitHub / File AM" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Status Publikasi</label>
+            <select id="formProductStatus" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+              <option value="active">Aktif (Tampilkan di Website)</option>
+              <option value="draft">Draft (Sembunyikan dari Publik)</option>
+            </select>
           </div>
         </div>
 
@@ -458,36 +478,30 @@
           <!-- Preview Container -->
           <div id="formImagePreviewContainer" class="hidden flex items-center gap-3 pt-2">
             <img id="formImagePreview" src="" alt="Preview" class="w-16 h-16 rounded-lg object-cover bg-slate-800 border border-white/10">
-            <span class="text-xs text-slate-400">Preview foto berhasil dimuat.</span>
+            <span class="text-xs text-emerald-400 font-medium flex items-center gap-1">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i> Foto siap disimpan
+            </span>
           </div>
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1.5">Deskripsi Produk</label>
-          <textarea id="formProductDescription" rows="3" placeholder="Tuliskan penjelasan produk secara menarik dan jelas..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500"></textarea>
+          <textarea id="formProductDescription" rows="3" placeholder="Tuliskan penjelasan produk secara detail dan profesional..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500"></textarea>
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1.5">Fitur & Spesifikasi Unggulan (1 baris per fitur)</label>
-          <textarea id="formProductFeatures" rows="3" placeholder="High Speed Response 24/7&#10;OpenRouter & Cloud Engine Ready&#10;Garansi & Panduan Setup" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm font-mono focus:outline-none focus:border-emerald-500"></textarea>
-          <span class="text-[11px] text-slate-500 mt-1 block">Tiap baris baru akan otomatis menjadi poin checklist di halaman produk.</span>
+          <textarea id="formProductFeatures" rows="3" placeholder="High Speed Response 24/7&#10;OpenRouter & Cloud Engine Ready&#10;Garansi & Panduan Setup Step-by-Step" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm font-mono focus:outline-none focus:border-emerald-500"></textarea>
+          <span class="text-[11px] text-slate-500 mt-1 block">Tiap baris otomatis akan menjadi poin checklist centang di halaman storefront.</span>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Status Produk</label>
-          <select id="formProductStatus" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
-            <option value="active">Aktif (Tampilkan di Website)</option>
-            <option value="draft">Draft (Sembunyikan dari Publik)</option>
-          </select>
-        </div>
-
-        <!-- Submit Button in Modal Footer -->
+        <!-- Submit Buttons in Modal Footer -->
         <div class="pt-4 border-t border-white/5 flex items-center justify-end gap-3">
           <button type="button" id="cancelProductModalBtn" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs sm:text-sm font-semibold transition-all cursor-pointer">
             Batal
           </button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs sm:text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
-            Simpan Produk
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs sm:text-sm font-extrabold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
+            Simpan Produk ke Katalog
           </button>
         </div>
       </form>
