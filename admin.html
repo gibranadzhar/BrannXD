@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owner Portal — BrannnXD Management</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#080a0f">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              900: '#064e3b',
+              accent: '#06b6d4',
+              violet: '#8b5cf6',
+              dark: '#080a0f',
+              card: 'rgba(14, 18, 27, 0.75)'
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            heading: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-[#080a0f] text-slate-200 antialiased min-h-screen flex flex-col selection:bg-emerald-500 selection:text-black">
+
+  <!-- ================= AUTH LOGIN SECTION ================= -->
+  <div id="loginSection" class="flex-1 flex items-center justify-center p-4 bg-grid-pattern relative">
+    <div class="absolute w-[450px] h-[350px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none"></div>
+
+    <div class="glass-panel w-full max-w-md p-8 rounded-3xl border border-white/10 shadow-2xl relative z-10 bg-[#0e121b]">
+      
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/20">
+          <i data-lucide="shield-check" class="w-7 h-7 text-black"></i>
+        </div>
+        <h1 class="text-2xl font-extrabold text-white tracking-tight font-heading">
+          Owner Portal <span class="text-emerald-400">BrannnXD</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Masukkan password owner untuk mengelola katalog produk.</p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password Owner</label>
+          <div class="relative">
+            <i data-lucide="key" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input 
+              type="password" 
+              id="loginPassword" 
+              placeholder="Masukkan password..." 
+              required
+              class="w-full pl-10 pr-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+            />
+          </div>
+          <div id="loginErrorMsg" class="hidden text-xs text-rose-400 mt-1.5 font-medium"></div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="rememberMeCheck" class="rounded bg-black/40 border-white/10 text-emerald-500 focus:ring-0">
+            <span>Ingat di browser ini</span>
+          </label>
+          <span class="text-[11px] text-slate-500">Default: <code class="text-emerald-400">brannn123</code></span>
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer mt-4"
+        >
+          <i data-lucide="unlock" class="w-4 h-4"></i>
+          <span>Masuk ke Dashboard</span>
+        </button>
+      </form>
+
+      <div class="mt-6 pt-6 border-t border-white/5 text-center">
+        <a href="index.html" class="text-xs text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-1.5">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          <span>Kembali ke Website Storefront</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ================= DASHBOARD MAIN SECTION ================= -->
+  <div id="adminDashboard" class="hidden flex-1 flex flex-col">
+    
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-40 backdrop-blur-xl bg-[#080a0f]/85 border-b border-white/5">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-400 flex items-center justify-center text-black font-heading font-black text-lg">
+            B
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-heading font-extrabold text-lg text-white">Owner Portal</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-widest">OWNER CMS</span>
+            </div>
+            <span class="text-[11px] text-slate-400 block -mt-0.5">Kelola Produk & Data BrannnXD</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <a href="index.html" target="_blank" class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold border border-white/10 transition-all flex items-center gap-1.5">
+            <i data-lucide="external-link" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span>Lihat Website</span>
+          </a>
+
+          <button id="logoutBtn" class="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold border border-rose-500/20 transition-all flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
+      
+      <!-- Stats Overview Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="glass-panel p-5 rounded-2xl border border-white/5 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400 font-medium mb-1">Total Produk</div>
+            <div id="statTotalProducts" class="text-2xl font-extrabold text-white font-heading">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-white/5 text-emerald-400 flex items-center justify-center">
+            <i data-lucide="package" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-white/5 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400 font-medium mb-1">Produk Aktif</div>
+            <div id="statActiveProducts" class="text-2xl font-extrabold text-emerald-400 font-heading">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-white/5 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400 font-medium mb-1">Nilai Total Katalog</div>
+            <div id="statTotalValue" class="text-lg sm:text-xl font-extrabold text-cyan-400 font-heading">Rp 0</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+            <i data-lucide="wallet" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-white/5 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slate-400 font-medium mb-1">Kategori Unik</div>
+            <div id="statTotalCategories" class="text-2xl font-extrabold text-purple-400 font-heading">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center">
+            <i data-lucide="tag" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex items-center gap-2 border-b border-white/10 pb-4 mb-6 overflow-x-auto scrollbar-none">
+        <button data-tab="products" class="admin-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 flex items-center gap-2 cursor-pointer whitespace-nowrap">
+          <i data-lucide="boxes" class="w-4 h-4"></i>
+          <span>Manajemen Produk</span>
+        </button>
+        <button data-tab="settings" class="admin-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-transparent text-slate-400 hover:text-white flex items-center gap-2 cursor-pointer whitespace-nowrap">
+          <i data-lucide="sliders" class="w-4 h-4"></i>
+          <span>Pengaturan Toko & Akun</span>
+        </button>
+        <button data-tab="backup" class="admin-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-transparent text-slate-400 hover:text-white flex items-center gap-2 cursor-pointer whitespace-nowrap">
+          <i data-lucide="database" class="w-4 h-4"></i>
+          <span>Backup & Database</span>
+        </button>
+      </div>
+
+      <!-- ================= TAB 1: PRODUCT MANAGEMENT ================= -->
+      <div id="tab-products" class="admin-tab-content space-y-4">
+        
+        <!-- Table Action Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-white">Daftar Produk Katalog</h2>
+            <p class="text-xs text-slate-400">Kelola semua produk yang tampil di website BrannnXD.</p>
+          </div>
+          <button id="openAddProductBtn" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Tambah Produk Baru</span>
+          </button>
+        </div>
+
+        <!-- Products Table Container -->
+        <div class="glass-panel rounded-2xl border border-white/5 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-white/5 bg-black/40 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th class="py-3 px-4 w-12">#</th>
+                  <th class="py-3 px-4">Produk</th>
+                  <th class="py-3 px-4">Harga</th>
+                  <th class="py-3 px-4">Status</th>
+                  <th class="py-3 px-4">Spesifikasi</th>
+                  <th class="py-3 px-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="productTableBody">
+                <!-- Rendered by admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ================= TAB 2: STORE SETTINGS ================= -->
+      <div id="tab-settings" class="admin-tab-content hidden space-y-6 max-w-3xl">
+        
+        <!-- Profile & Store Details -->
+        <div class="glass-panel p-6 rounded-2xl border border-white/5">
+          <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+            <i data-lucide="store" class="w-4 h-4 text-emerald-400"></i>
+            <span>Identitas Toko & Telegram</span>
+          </h3>
+          <p class="text-xs text-slate-400 mb-6">Ubah informasi kontak Telegram tempat pembeli memesan produk.</p>
+
+          <form id="settingsForm" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nama Toko / Branding</label>
+                <input type="text" id="setStoreName" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Username Telegram (Penerima Order)</label>
+                <div class="relative">
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-sm">@</span>
+                  <input type="text" id="setTelegramUsername" placeholder="brannnn22" class="w-full pl-8 pr-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tagline Website</label>
+              <input type="text" id="setTagline" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Banner Pengumuman (Header Atas)</label>
+              <input type="text" id="setAnnouncement" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div class="pt-2">
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs sm:text-sm transition-all cursor-pointer">
+                Simpan Perubahan Toko
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Security / Password Change -->
+        <div class="glass-panel p-6 rounded-2xl border border-white/5">
+          <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+            <i data-lucide="key-round" class="w-4 h-4 text-cyan-400"></i>
+            <span>Ganti Password Owner</span>
+          </h3>
+          <p class="text-xs text-slate-400 mb-6">Ubah kata sandi untuk masuk ke Owner Portal ini.</p>
+
+          <form id="changePasswordForm" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password Lama</label>
+              <input type="password" id="oldPasswordInput" required placeholder="Default: brannn123" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password Baru</label>
+                <input type="password" id="newPasswordInput" required minlength="5" placeholder="Minimal 5 karakter" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Konfirmasi Password Baru</label>
+                <input type="password" id="confirmPasswordInput" required minlength="5" placeholder="Ulangi password baru" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs sm:text-sm transition-all cursor-pointer">
+                Perbarui Password
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+
+      <!-- ================= TAB 3: BACKUP & DATABASE ================= -->
+      <div id="tab-backup" class="admin-tab-content hidden space-y-6 max-w-3xl">
+        
+        <div class="glass-panel p-6 rounded-2xl border border-white/5 space-y-6">
+          <div>
+            <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+              <i data-lucide="download-cloud" class="w-4 h-4 text-emerald-400"></i>
+              <span>Export & Backup Data Produk</span>
+            </h3>
+            <p class="text-xs text-slate-400">Download seluruh katalog produk dan konfigurasi toko sebagai file JSON yang dapat disimpan di komputer kamu.</p>
+            <button id="exportJsonBtn" class="mt-4 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs sm:text-sm font-semibold border border-white/10 transition-all flex items-center gap-2 cursor-pointer">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Download Backup JSON</span>
+            </button>
+          </div>
+
+          <hr class="border-white/5">
+
+          <div>
+            <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+              <i data-lucide="upload-cloud" class="w-4 h-4 text-cyan-400"></i>
+              <span>Import & Restore Data Produk</span>
+            </h3>
+            <p class="text-xs text-slate-400 mb-4">Pulihkan data katalog dari file backup JSON yang sebelumnya kamu download.</p>
+            <label class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs sm:text-sm font-semibold border border-cyan-500/20 transition-all cursor-pointer">
+              <i data-lucide="file-up" class="w-4 h-4"></i>
+              <span>Pilih File Backup JSON</span>
+              <input type="file" id="importJsonInput" accept=".json" class="hidden">
+            </label>
+          </div>
+
+          <hr class="border-white/5">
+
+          <div>
+            <h3 class="text-base font-bold text-rose-400 mb-1 flex items-center gap-2">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i>
+              <span>Reset ke Katalog Bawaan</span>
+            </h3>
+            <p class="text-xs text-slate-400 mb-4">Kembalikan daftar produk ke sampel awal BrannnXD (6 produk starter). Gunakan jika ingin membersihkan data uji coba.</p>
+            <button id="resetDefaultBtn" class="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs sm:text-sm font-semibold border border-rose-500/20 transition-all flex items-center gap-2 cursor-pointer">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              <span>Reset Katalog ke Default</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+
+  <!-- ================= ADD / EDIT PRODUCT MODAL ================= -->
+  <div id="productModal" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="modal-content glass-panel w-full max-w-2xl max-h-[92vh] rounded-3xl overflow-hidden flex flex-col border border-white/10 shadow-2xl bg-[#0e121b]">
+      
+      <!-- Modal Header -->
+      <div class="p-6 border-b border-white/5 flex items-center justify-between">
+        <div>
+          <h2 id="productModalTitle" class="text-lg font-bold text-white font-heading">Tambah Produk Baru</h2>
+          <p class="text-xs text-slate-400">Isi detail lengkap produk untuk ditampilkan di katalog.</p>
+        </div>
+        <button id="closeProductModalBtn" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Modal Form Body -->
+      <form id="productForm" class="p-6 overflow-y-auto space-y-4 flex-1">
+        <input type="hidden" id="formProductId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nama Produk *</label>
+            <input type="text" id="formProductName" required placeholder="Contoh: WhatsApp Bot Multi-Device" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Kategori Produk</label>
+            <input type="text" id="formProductCategory" placeholder="Bot & AI, Source Code, Motion, etc." list="categorySuggestions" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+            <datalist id="categorySuggestions">
+              <option value="Bot & AI">
+              <option value="Motion & Design">
+              <option value="Source Code">
+              <option value="Layanan Cloud">
+              <option value="Tools & Apps">
+            </datalist>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Harga Jual (Rp) *</label>
+            <input type="number" id="formProductPrice" required min="0" placeholder="75000" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Harga Coret / Asli (Opsional)</label>
+            <input type="number" id="formProductOriginalPrice" min="0" placeholder="120000" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Badge / Tag (Opsional)</label>
+            <input type="text" id="formProductBadge" placeholder="BEST SELLER / PROMO" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <!-- Image Upload Section -->
+        <div class="p-4 rounded-xl bg-black/30 border border-white/5 space-y-3">
+          <label class="block text-xs font-semibold text-slate-300">Foto Produk</label>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <span class="text-[11px] text-slate-400 block mb-1">Opsi 1: Upload File Gambar</span>
+              <input type="file" id="formProductImageFile" accept="image/*" class="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer">
+            </div>
+
+            <div>
+              <span class="text-[11px] text-slate-400 block mb-1">Opsi 2: URL Gambar Langsung</span>
+              <input type="url" id="formProductImageUrl" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-white text-xs focus:outline-none focus:border-emerald-500">
+            </div>
+          </div>
+
+          <!-- Preview Container -->
+          <div id="formImagePreviewContainer" class="hidden flex items-center gap-3 pt-2">
+            <img id="formImagePreview" src="" alt="Preview" class="w-16 h-16 rounded-lg object-cover bg-slate-800 border border-white/10">
+            <span class="text-xs text-slate-400">Preview foto berhasil dimuat.</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Deskripsi Produk</label>
+          <textarea id="formProductDescription" rows="3" placeholder="Tuliskan penjelasan produk secara menarik dan jelas..." class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Fitur & Spesifikasi Unggulan (1 baris per fitur)</label>
+          <textarea id="formProductFeatures" rows="3" placeholder="High Speed Response 24/7&#10;OpenRouter & Cloud Engine Ready&#10;Garansi & Panduan Setup" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm font-mono focus:outline-none focus:border-emerald-500"></textarea>
+          <span class="text-[11px] text-slate-500 mt-1 block">Tiap baris baru akan otomatis menjadi poin checklist di halaman produk.</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Status Produk</label>
+          <select id="formProductStatus" class="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500">
+            <option value="active">Aktif (Tampilkan di Website)</option>
+            <option value="draft">Draft (Sembunyikan dari Publik)</option>
+          </select>
+        </div>
+
+        <!-- Submit Button in Modal Footer -->
+        <div class="pt-4 border-t border-white/5 flex items-center justify-end gap-3">
+          <button type="button" id="cancelProductModalBtn" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs sm:text-sm font-semibold transition-all cursor-pointer">
+            Batal
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs sm:text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
+            Simpan Produk
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/admin.js"></script>
+  <script>
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  </script>
+</body>
+</html>
