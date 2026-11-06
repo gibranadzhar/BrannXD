@@ -53,7 +53,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="assets/css/style.css?v=3.1">
+  <link rel="stylesheet" href="assets/css/style.css?v=3.2">
 </head>
 <body class="bg-[#080a0f] text-slate-200 antialiased selection:bg-emerald-500 selection:text-black">
 
@@ -619,38 +619,136 @@
         </button>
       </div>
 
-      <!-- ================= TAMPILAN 1: QRIS SCAN SAJA (SEBELUM PENCET SUDAH BAYAR) ================= -->
-      <div id="stepQrisView" class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
+      <!-- ================= TAMPILAN 1: QRIS SCAN SAJA (DILENGKAPI KODE UNIK & FORM BUKTI) ================= -->
+      <div id="stepQrisView" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
         
-        <!-- Summary Box -->
-        <div class="p-4 rounded-2xl bg-black/60 border border-white/10 flex items-center justify-between">
-          <div>
-            <span class="text-[10px] text-slate-400 uppercase font-semibold block">Item yang Dibeli:</span>
-            <span id="qrisProductTitle" class="text-xs sm:text-sm font-bold text-white block mt-0.5 truncate max-w-[200px]">Nama Produk</span>
+        <!-- Countdown Timer Session -->
+        <div class="flex items-center justify-between text-xs bg-amber-500/10 border border-amber-500/25 px-3.5 py-2 rounded-xl text-amber-300">
+          <span class="flex items-center gap-1.5 font-medium">
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i> Selesaikan Dalam:
+          </span>
+          <span id="qrisTimerBadge" class="font-mono font-bold text-white bg-black/50 px-2 py-0.5 rounded border border-amber-500/20">15:00</span>
+        </div>
+
+        <!-- Summary & Unique Amount Box -->
+        <div class="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] text-slate-400 uppercase font-semibold">Produk:</span>
+            <span id="qrisProductTitle" class="text-xs sm:text-sm font-bold text-white truncate max-w-[200px]">Nama Produk</span>
           </div>
-          <div class="text-right">
-            <span class="text-[10px] text-slate-400 uppercase font-semibold block">Total Tagihan:</span>
-            <span id="qrisProductPrice" class="text-lg sm:text-xl font-black text-emerald-400 font-heading">Rp 0</span>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-400">Harga Pokok:</span>
+            <span id="qrisBasePrice" class="text-slate-300 font-mono">Rp 0</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-cyan-400 flex items-center gap-1 font-semibold">
+              <i data-lucide="hash" class="w-3 h-3"></i> Kode Unik Verifikasi:
+            </span>
+            <span id="qrisUniqueCode" class="text-cyan-400 font-mono font-bold">+Rp 0</span>
+          </div>
+          
+          <div class="pt-2 border-t border-white/10 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-emerald-400 uppercase font-bold block">TOTAL TRANSFER (PERSIS):</span>
+              <span id="qrisProductPrice" class="text-xl sm:text-2xl font-black text-emerald-400 font-heading">Rp 0</span>
+            </div>
+            <button id="btnCopyNominal" type="button" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors" title="Salin angka nominal tepat">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Salin Nominal</span>
+            </button>
+          </div>
+
+          <div class="text-[11px] text-amber-200/90 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl flex items-start gap-2">
+            <i data-lucide="alert-circle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+            <span>Transfer <b>WAJIB PERSIS</b> beserta 3 digit kode unik agar uang masuk di mutasi bank langsung dikenali owner!</span>
           </div>
         </div>
 
         <!-- QRIS Barcode Card -->
-        <div class="p-4 rounded-3xl bg-white shadow-2xl max-w-[240px] mx-auto border-4 border-slate-900 flex flex-col items-center">
+        <div class="p-4 rounded-3xl bg-white shadow-2xl max-w-[230px] mx-auto border-4 border-slate-900 flex flex-col items-center">
           <img id="qrisImageEl" src="assets/images/qris-brann.png" alt="Scan QRIS BRANN DIGITAL HUB" class="w-full h-auto object-contain rounded-xl">
         </div>
 
-        <div class="text-center space-y-1">
+        <div class="text-center space-y-0.5">
           <div class="text-xs font-bold text-white font-mono">BRANN DIGITAL HUB, DIGITAL & KREATIF</div>
           <div id="qrisNmid" class="text-[11px] text-slate-400 font-mono">NMID: ID1026607305962</div>
-          <p class="text-[11px] text-slate-400 mt-1">Scan QRIS menggunakan BCA, Mandiri, BRI, Dana, GoPay, OVO, ShopeePay atau M-Banking apapun.</p>
+          <p class="text-[10px] text-slate-400">Scan via BCA, Mandiri, BRI, BNI, Dana, GoPay, OVO, ShopeePay atau M-Banking apapun.</p>
         </div>
 
-        <div class="pt-2 space-y-2.5">
-          <!-- Tombol "Sudah Bayar" -->
-          <button id="btnSudahBayar" type="button" class="w-full py-3.5 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
+        <!-- Form Verifikasi Pengirim & Upload Bukti Transfer (WAJIB ANTI-SPAM) -->
+        <div class="p-4 rounded-2xl bg-[#0e1424] border border-emerald-500/30 space-y-3">
+          <div class="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wide">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+            <span>Konfirmasi Pembayaran Anda (Wajib)</span>
+          </div>
+
+          <!-- 1. Nama Akun / Bank Pengirim -->
+          <div>
+            <label class="block text-[11px] text-slate-300 font-semibold mb-1">
+              Nama Rekening / Akun E-Wallet Pengirim: <span class="text-rose-400">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="inputSenderName" 
+              placeholder="Contoh: Budi Santoso (BCA) / Rian (DANA)" 
+              class="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-500 transition-colors"
+            />
+          </div>
+
+          <!-- 2. Upload Screenshot Bukti Transfer -->
+          <div>
+            <label class="block text-[11px] text-slate-300 font-semibold mb-1">
+              Upload Screenshot Bukti Transfer: <span class="text-rose-400">*</span>
+            </label>
+            <input 
+              type="file" 
+              id="inputProofFile" 
+              accept="image/*" 
+              class="hidden"
+            />
+            
+            <button 
+              type="button" 
+              id="btnSelectProof" 
+              class="w-full py-2.5 px-3 rounded-xl border border-dashed border-emerald-500/50 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-300 text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all"
+            >
+              <i data-lucide="upload" class="w-4 h-4 text-emerald-400"></i>
+              <span id="selectProofLabel">Pilih Foto Bukti Transfer M-Banking / E-Wallet</span>
+            </button>
+
+            <!-- Preview Bukti -->
+            <div id="proofPreviewContainer" class="hidden mt-2 p-2.5 rounded-xl bg-black/60 border border-emerald-500/30 flex items-center justify-between">
+              <div class="flex items-center gap-2.5 overflow-hidden">
+                <img id="proofPreviewImg" src="" alt="Bukti Transfer" class="w-10 h-10 object-cover rounded-lg border border-white/10 shrink-0">
+                <div class="text-[11px] text-slate-200 truncate">
+                  <span id="proofFileName" class="block font-semibold truncate max-w-[180px]">bukti.jpg</span>
+                  <span class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                    <i data-lucide="check" class="w-3 h-3"></i> Bukti siap diverifikasi
+                  </span>
+                </div>
+              </div>
+              <button type="button" id="btnRemoveProof" class="p-1.5 text-slate-400 hover:text-rose-400 cursor-pointer" title="Hapus foto bukti">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-1 space-y-2">
+          <!-- Tombol "Sudah Bayar" (Awalnya Terkunci) -->
+          <button 
+            id="btnSudahBayar" 
+            type="button" 
+            disabled 
+            class="w-full py-3.5 px-6 rounded-2xl bg-emerald-500 text-black font-black text-sm shadow-xl transition-all flex items-center justify-center gap-2 cursor-not-allowed opacity-50"
+          >
             <i data-lucide="check-circle" class="w-4 h-4"></i>
-            <span>Sudah Bayar &rarr;</span>
+            <span>Sudah Bayar & Terbitkan Invoice &rarr;</span>
           </button>
+          
+          <p id="sudahBayarHint" class="text-[11px] text-slate-400 text-center leading-relaxed">
+            ⚠️ Isi nama pengirim dan upload screenshot bukti transfer agar tombol "Sudah Bayar" aktif.
+          </p>
 
           <button id="downloadQrisImageBtn" type="button" class="w-full py-2 px-3 text-center text-xs text-slate-400 hover:text-white transition-colors cursor-pointer flex items-center justify-center gap-1.5">
             <i data-lucide="download" class="w-3.5 h-3.5 text-cyan-400"></i>
@@ -663,12 +761,12 @@
       <!-- ================= TAMPILAN 2: INVOICE / STRUK (BARU KELUAR SETELAH PENCET SUDAH BAYAR) ================= -->
       <div id="stepInvoiceView" class="hidden p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
         
-        <!-- Peringatan Wajib Chat ke Telegram -->
+        <!-- Peringatan Anti-Fraud & Wajib Chat ke Telegram -->
         <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
           <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
           <div class="text-xs text-amber-200/90 leading-relaxed">
-            <b class="text-amber-300 block mb-1">MOHON SERTAKAN BUKTI TRANSFER & INVOICE INI:</b>
-            Kirimkan bukti transfer QRIS dan teks invoice pembelian di bawah ini ke Telegram <b>@brannnn22</b>. Owner akan langsung memberikan data / akses produk jika sudah sesuai!
+            <b class="text-amber-300 block mb-1">WAJIB SERTAKAN BUKTI TRANSFER & INVOICE KE TELEGRAM:</b>
+            Kirimkan teks invoice dan bukti transfer di bawah ini ke Telegram <b>@brannnn22</b>. Owner HANYA memproses order jika dana mutasi <b>REAL masuk</b> ke rekening. Manipulasi bukti = Auto Blacklist!
           </div>
         </div>
 
@@ -690,21 +788,38 @@
               <span id="strukDateTime" class="text-slate-300">06/11/2026, 00:00 WIB</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-500">METODE:</span>
-              <span class="text-cyan-400 font-bold">QRIS GPN Nasional</span>
+              <span class="text-slate-500">PENGIRIM:</span>
+              <span id="strukSenderName" class="text-white font-bold truncate max-w-[200px]">Nama Pengirim</span>
             </div>
             <div class="flex justify-between">
               <span class="text-slate-500">ITEM:</span>
               <span id="strukProductName" class="text-white font-bold truncate max-w-[200px]">Nama Produk</span>
             </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">HARGA POKOK:</span>
+              <span id="strukBasePrice" class="text-slate-300">Rp 0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">KODE UNIK:</span>
+              <span id="strukUniqueCode" class="text-cyan-400 font-bold">+Rp 0</span>
+            </div>
             <div class="flex justify-between pt-1 border-t border-dashed border-white/10 text-sm">
-              <span class="text-slate-400 font-bold">TOTAL BAYAR:</span>
+              <span class="text-slate-400 font-bold">TOTAL MUTASI:</span>
               <span id="strukPrice" class="text-emerald-400 font-black">Rp 0</span>
             </div>
           </div>
 
-          <div class="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center text-[10px] font-bold text-amber-300">
-            STATUS: MENUNGGU BUKTI & VERIFIKASI OWNER
+          <!-- Thumbnail Bukti Transfer Terlampir -->
+          <div id="strukProofThumbBox" class="hidden p-2.5 rounded-xl bg-black/60 border border-white/10 flex items-center gap-3">
+            <img id="strukProofThumb" src="" alt="Thumbnail Bukti Transfer" class="w-12 h-12 object-cover rounded-lg border border-white/10 shrink-0">
+            <div class="text-[10px] text-slate-400 font-mono">
+              <span class="text-emerald-400 font-bold block">✓ BUKTI SCREENSHOT TERLAMPIR</span>
+              <span>Siap dikirimkan bersama teks invoice ke Telegram owner.</span>
+            </div>
+          </div>
+
+          <div id="strukStatusBadge" class="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center text-[10px] font-bold text-amber-300">
+            STATUS: MENUNGGU VERIFIKASI MUTASI OWNER
           </div>
         </div>
 
@@ -739,8 +854,8 @@
   </div>
 
   <!-- Scripts with Cache-Buster -->
-  <script src="assets/js/store.js?v=3.1"></script>
-  <script src="assets/js/app.js?v=3.1"></script>
+  <script src="assets/js/store.js?v=3.2"></script>
+  <script src="assets/js/app.js?v=3.2"></script>
   <script>
     document.getElementById('yearSpan').textContent = new Date().getFullYear();
     if (window.lucide) {

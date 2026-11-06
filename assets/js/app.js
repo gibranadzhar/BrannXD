@@ -1,12 +1,17 @@
 /**
  * BrannnXD - Storefront Application Logic (Production)
- * Exact Flow:
+ * Exact Flow & Anti-Fraud Security:
  * 1. Klik Produk / Tombol "Lihat Produk" -> Buka Modal Detail Produk ("Lihat Produk")
  * 2. Di Modal Detail Produk -> Klik "Lanjut ke Pembayaran"
- * 3. Buka Modal QRIS -> Muncul Barcode QRIS BRANN DIGITAL HUB + Tombol "Sudah Bayar"
- * 4. Klik Tombol "Sudah Bayar" -> Muncul Invoice / Struk Pembelian Resmi
- * 5. Instruksi Wajib: Chat ke Telegram @brannnn22 kirim screenshot bukti transfer + invoice.
- *    Owner memverifikasi dan memberikan data/akses produk jika sudah sesuai!
+ * 3. Buka Modal QRIS:
+ *    - Ditambahkan 3 digit Kode Unik otomatis (contoh: Rp 50.318)
+ *    - Timer countdown 15 menit
+ *    - QRIS Barcode BRANN DIGITAL HUB (NMID ID1026607305962)
+ *    - Form Wajib: Nama Rekening Pengirim + Upload Bukti Screenshot Transfer
+ *    - Tombol "Sudah Bayar" terkunci sampai bukti & nama pengirim diisi
+ * 4. Klik Tombol "Sudah Bayar" -> Terbit Struk / Invoice Resmi
+ * 5. Instruksi Wajib: Chat ke Telegram @brannnn22 kirim bukti screenshot + invoice
+ *    Owner cek mutasi rekening -> jika sesuai, kirimkan data produk!
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,6 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentSort = 'popular';
   let activeProduct = null;
   let activeInvoice = null;
+  let activeUniqueCode = 0;
+  let activeTotalAmount = 0;
+  let activeProofDataUrl = '';
+  let countdownTimer = null;
+  let countdownSeconds = 900; // 15 menit
 
   // DOM Elements - Catalog & Filters
   const productsGrid = document.getElementById('productsGrid');
@@ -49,21 +59,39 @@ document.addEventListener('DOMContentLoaded', () => {
   const paymentCloseBtn = document.getElementById('paymentCloseBtn');
   const paymentModalHeaderTitle = document.getElementById('paymentModalHeaderTitle');
 
-  // Step 1: QRIS View Elements
+  // Step 1: QRIS View Elements with Unique Code & Anti-Spam Form
   const stepQrisView = document.getElementById('stepQrisView');
+  const qrisTimerBadge = document.getElementById('qrisTimerBadge');
   const qrisProductTitle = document.getElementById('qrisProductTitle');
+  const qrisBasePrice = document.getElementById('qrisBasePrice');
+  const qrisUniqueCode = document.getElementById('qrisUniqueCode');
   const qrisProductPrice = document.getElementById('qrisProductPrice');
+  const btnCopyNominal = document.getElementById('btnCopyNominal');
   const qrisImageEl = document.getElementById('qrisImageEl');
   const qrisNmid = document.getElementById('qrisNmid');
+  const inputSenderName = document.getElementById('inputSenderName');
+  const inputProofFile = document.getElementById('inputProofFile');
+  const btnSelectProof = document.getElementById('btnSelectProof');
+  const selectProofLabel = document.getElementById('selectProofLabel');
+  const proofPreviewContainer = document.getElementById('proofPreviewContainer');
+  const proofPreviewImg = document.getElementById('proofPreviewImg');
+  const proofFileName = document.getElementById('proofFileName');
+  const btnRemoveProof = document.getElementById('btnRemoveProof');
   const btnSudahBayar = document.getElementById('btnSudahBayar');
+  const sudahBayarHint = document.getElementById('sudahBayarHint');
   const downloadQrisImageBtn = document.getElementById('downloadQrisImageBtn');
 
   // Step 2: Invoice & Telegram Confirmation Elements
   const stepInvoiceView = document.getElementById('stepInvoiceView');
   const strukInvoiceNo = document.getElementById('strukInvoiceNo');
   const strukDateTime = document.getElementById('strukDateTime');
+  const strukSenderName = document.getElementById('strukSenderName');
   const strukProductName = document.getElementById('strukProductName');
+  const strukBasePrice = document.getElementById('strukBasePrice');
+  const strukUniqueCode = document.getElementById('strukUniqueCode');
   const strukPrice = document.getElementById('strukPrice');
+  const strukProofThumbBox = document.getElementById('strukProofThumbBox');
+  const strukProofThumb = document.getElementById('strukProofThumb');
   const btnKirimTelegram = document.getElementById('btnKirimTelegram');
   const btnSalinInvoice = document.getElementById('btnSalinInvoice');
   const btnDownloadStruk = document.getElementById('btnDownloadStruk');
@@ -114,6 +142,125 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   });
+
+  // Salin Nominal Unik Tepat
+  if (btnCopyNominal) {
+    btnCopyNominal.addEventListener('click', () => {
+      if (!activeTotalAmount) return;
+      navigator.clipboard.writeText(activeTotalAmount.toString()).then(() => {
+        showToast(`Nominal Rp ${activeTotalAmount.toLocaleString('id-ID')} berhasil disalin!`, 'copy');
+      });
+    });
+  }
+
+  // Countdown Timer 15 Menit
+  function startPaymentCountdown() {
+    stopPaymentCountdown();
+    countdownSeconds = 900; // 15 menit
+    updateTimerBadge();
+
+    countdownTimer = setInterval(() => {
+      countdownSeconds--;
+      if (countdownSeconds <= 0) {
+        stopPaymentCountdown();
+        if (qrisTimerBadge) {
+          qrisTimerBadge.textContent = 'KEDALUWARSA';
+          qrisTimerBadge.className = 'font-mono font-bold text-rose-400 bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30';
+        }
+      } else {
+        updateTimerBadge();
+      }
+    }, 1000);
+  }
+
+  function stopPaymentCountdown() {
+    if (countdownTimer) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+  }
+
+  function updateTimerBadge() {
+    if (!qrisTimerBadge) return;
+    const m = Math.floor(countdownSeconds / 60);
+    const s = countdownSeconds % 60;
+    const formatted = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    qrisTimerBadge.textContent = formatted;
+    qrisTimerBadge.className = 'font-mono font-bold text-white bg-black/50 px-2 py-0.5 rounded border border-amber-500/20';
+  }
+
+  // Validasi Form Pembayaran (Anti-Spam)
+  function validateCheckoutForm() {
+    const senderName = inputSenderName ? inputSenderName.value.trim() : '';
+    const hasProof = Boolean(activeProofDataUrl);
+    const isValid = senderName.length >= 3 && hasProof;
+
+    if (btnSudahBayar) {
+      btnSudahBayar.disabled = !isValid;
+      if (isValid) {
+        btnSudahBayar.classList.remove('cursor-not-allowed', 'opacity-50');
+        btnSudahBayar.classList.add('hover:bg-emerald-400', 'cursor-pointer', 'shadow-emerald-500/30');
+        if (sudahBayarHint) {
+          sudahBayarHint.innerHTML = '<span class="text-emerald-400 font-bold flex items-center justify-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Data lengkap! Silakan klik tombol "Sudah Bayar" di atas.</span>';
+          if (window.lucide) window.lucide.createIcons();
+        }
+      } else {
+        btnSudahBayar.classList.add('cursor-not-allowed', 'opacity-50');
+        btnSudahBayar.classList.remove('hover:bg-emerald-400', 'cursor-pointer', 'shadow-emerald-500/30');
+        if (sudahBayarHint) {
+          sudahBayarHint.innerHTML = '⚠️ Isi nama pengirim dan upload screenshot bukti transfer agar tombol "Sudah Bayar" aktif.';
+        }
+      }
+    }
+  }
+
+  // Event Input Nama Pengirim
+  if (inputSenderName) {
+    inputSenderName.addEventListener('input', validateCheckoutForm);
+  }
+
+  // Event Trigger Pilih File Bukti
+  if (btnSelectProof && inputProofFile) {
+    btnSelectProof.addEventListener('click', () => {
+      inputProofFile.click();
+    });
+  }
+
+  // Handle File Input Change (Read as Base64)
+  if (inputProofFile) {
+    inputProofFile.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        showToast('Mohon pilih file gambar (JPG/PNG)!', 'alert-circle');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        activeProofDataUrl = ev.target.result;
+        if (proofPreviewImg) proofPreviewImg.src = activeProofDataUrl;
+        if (proofFileName) proofFileName.textContent = file.name;
+        if (proofPreviewContainer) proofPreviewContainer.classList.remove('hidden');
+        if (selectProofLabel) selectProofLabel.textContent = 'Ganti Foto Bukti Transfer';
+        validateCheckoutForm();
+        showToast('Foto bukti transfer berhasil dipilih!', 'image');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Hapus Foto Bukti
+  if (btnRemoveProof) {
+    btnRemoveProof.addEventListener('click', () => {
+      activeProofDataUrl = '';
+      if (inputProofFile) inputProofFile.value = '';
+      if (proofPreviewContainer) proofPreviewContainer.classList.add('hidden');
+      if (selectProofLabel) selectProofLabel.textContent = 'Pilih Foto Bukti Transfer M-Banking / E-Wallet';
+      validateCheckoutForm();
+    });
+  }
 
   // Render Kategori
   function renderCategories() {
@@ -335,12 +482,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ================= 2. MODAL PEMBAYARAN (QRIS -> SUDAH BAYAR -> INVOICE & TELEGRAM) =================
+  // ================= 2. MODAL PEMBAYARAN (QRIS DENGAN KODE UNIK & FORM BUKTI) =================
   window.openPaymentModal = function(id) {
     const product = store.getProductById(id);
     if (!product) return;
     activeProduct = product;
     activeInvoice = null; // Belum terbit sebelum klik "Sudah Bayar"
+
+    // Generate 3-Digit Unique Code (Anti-Troll & Anti-Fraud)
+    activeUniqueCode = Math.floor(100 + Math.random() * 899);
+    activeTotalAmount = Number(product.price) + activeUniqueCode;
+
+    // Reset Form Input State
+    activeProofDataUrl = '';
+    if (inputSenderName) inputSenderName.value = '';
+    if (inputProofFile) inputProofFile.value = '';
+    if (proofPreviewContainer) proofPreviewContainer.classList.add('hidden');
+    if (selectProofLabel) selectProofLabel.textContent = 'Pilih Foto Bukti Transfer M-Banking / E-Wallet';
+    validateCheckoutForm();
 
     const qrisInfo = settings.qris || {
       merchantName: 'BRANN DIGITAL HUB, DIGITAL & KREATIF',
@@ -348,19 +507,24 @@ document.addEventListener('DOMContentLoaded', () => {
       image: 'assets/images/qris-brann.png'
     };
 
-    // Set QRIS View Data
+    // Set QRIS View Data with Unique Code
     if (qrisProductTitle) qrisProductTitle.textContent = product.name;
-    if (qrisProductPrice) qrisProductPrice.textContent = store.formatRupiah(product.price);
+    if (qrisBasePrice) qrisBasePrice.textContent = store.formatRupiah(product.price);
+    if (qrisUniqueCode) qrisUniqueCode.textContent = `+Rp ${activeUniqueCode}`;
+    if (qrisProductPrice) qrisProductPrice.textContent = store.formatRupiah(activeTotalAmount);
     if (qrisNmid) qrisNmid.textContent = `NMID: ${qrisInfo.nmid}`;
     if (qrisImageEl) qrisImageEl.src = qrisInfo.image || 'assets/images/qris-brann.png';
 
     if (paymentModalHeaderTitle) {
-      paymentModalHeaderTitle.textContent = 'Pembayaran QRIS';
+      paymentModalHeaderTitle.textContent = 'Pembayaran QRIS Resmi';
     }
 
     // RESET STATE: Tampilkan HANYA QRIS, Sembunyikan Invoice!
     if (stepQrisView) stepQrisView.classList.remove('hidden');
     if (stepInvoiceView) stepInvoiceView.classList.add('hidden');
+
+    // Mulai Timer 15 Menit
+    startPaymentCountdown();
 
     paymentModal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -369,6 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function closePaymentModal() {
+    stopPaymentCountdown();
     if (paymentModal) {
       paymentModal.classList.remove('active');
     }
@@ -382,27 +547,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ================= 3. AKSI TOMBOL "SUDAH BAYAR" -> TERBITKAN INVOICE & TELEGRAM CTA =================
+  // ================= 3. AKSI TOMBOL "SUDAH BAYAR" -> TERBITKAN INVOICE RESMI =================
   if (btnSudahBayar) {
     btnSudahBayar.addEventListener('click', () => {
       if (!activeProduct) return;
+      const senderName = inputSenderName ? inputSenderName.value.trim() : '';
 
-      // 1. Generate Invoice Baru
-      activeInvoice = store.createInvoice(activeProduct);
+      if (!senderName || !activeProofDataUrl) {
+        showToast('Wajib isi nama pengirim & upload screenshot bukti transfer!', 'alert-triangle');
+        return;
+      }
+
+      // 1. Generate Invoice Baru dengan Kode Unik & Data Pengirim
+      activeInvoice = store.createInvoice(activeProduct, senderName, activeUniqueCode, activeProofDataUrl);
 
       // 2. Isi Data ke Struk / Invoice Box
       if (strukInvoiceNo) strukInvoiceNo.textContent = activeInvoice.invoiceNumber;
       if (strukDateTime) strukDateTime.textContent = `${activeInvoice.date}, ${activeInvoice.time}`;
+      if (strukSenderName) strukSenderName.textContent = activeInvoice.senderName;
       if (strukProductName) strukProductName.textContent = activeInvoice.productName;
+      if (strukBasePrice) strukBasePrice.textContent = activeInvoice.basePriceFormatted;
+      if (strukUniqueCode) strukUniqueCode.textContent = `+Rp ${activeInvoice.uniqueCode}`;
       if (strukPrice) strukPrice.textContent = activeInvoice.priceFormatted;
 
-      // 3. Pasang URL Telegram dengan pesan invoice otomatis
+      // 3. Tampilkan Thumbnail Bukti Transfer di Struk
+      if (strukProofThumbBox && strukProofThumb) {
+        strukProofThumb.src = activeProofDataUrl;
+        strukProofThumbBox.classList.remove('hidden');
+      }
+
+      // 4. Pasang URL Telegram dengan pesan invoice otomatis lengkap
       const telegramUrl = store.getTelegramInvoiceUrl(activeInvoice);
       if (btnKirimTelegram) {
         btnKirimTelegram.href = telegramUrl;
       }
 
-      // 4. Ubah Tampilan: Sembunyikan QRIS, Munculkan Struk Invoice!
+      // 5. Ubah Tampilan: Sembunyikan QRIS, Munculkan Struk Invoice!
       if (stepQrisView) stepQrisView.classList.add('hidden');
       if (stepInvoiceView) {
         stepInvoiceView.classList.remove('hidden');
@@ -450,13 +630,15 @@ document.addEventListener('DOMContentLoaded', () => {
 No. Invoice: ${activeInvoice.invoiceNumber}
 Produk: ${activeInvoice.productName}
 Kategori: ${activeInvoice.category}
-Total Bayar: ${activeInvoice.priceFormatted}
+Atas Nama Pengirim: ${activeInvoice.senderName}
+Harga Pokok: ${activeInvoice.basePriceFormatted}
+Kode Unik: ${activeInvoice.uniqueCode}
+TOTAL MUTASI TRANSFER: ${activeInvoice.priceFormatted}
 Waktu Transaksi: ${activeInvoice.date}, ${activeInvoice.time}
-Merchant: ${activeInvoice.merchantName} (${activeInvoice.nmid})
-Status: ${activeInvoice.status}
+Merchant QRIS: ${activeInvoice.merchantName} (${activeInvoice.nmid})
 
 ⚠️ *INSTRUKSI KONFIRMASI:*
-Kirimkan teks invoice ini bersama screenshot bukti pembayaran ke Telegram @${cleanTelegram}. Owner akan memberikan data/file produk jika sudah sesuai!`;
+Kirimkan teks invoice ini bersama screenshot bukti pembayaran ke Telegram @${cleanTelegram}. Owner HANYA memproses order jika dana mutasi REAL masuk ke rekening!`;
 
       navigator.clipboard.writeText(text).then(() => {
         showToast('Teks invoice berhasil disalin ke clipboard! Siap dikirim ke Telegram.', 'copy');
@@ -470,7 +652,7 @@ Kirimkan teks invoice ini bersama screenshot bukti pembayaran ke Telegram @${cle
   function generateReceiptCanvas(invoice) {
     const canvas = document.createElement('canvas');
     canvas.width = 640;
-    canvas.height = 930;
+    canvas.height = 980;
     const ctx = canvas.getContext('2d');
 
     // Background Dark Slate
@@ -527,72 +709,74 @@ Kirimkan teks invoice ini bersama screenshot bukti pembayaran ke Telegram @${cle
 
       ctx.textAlign = 'right';
       ctx.fillStyle = isGreen ? '#34d399' : '#ffffff';
-      ctx.font = isGreen ? 'bold 17px monospace' : 'bold 14px monospace';
+      ctx.font = isGreen ? 'bold 16px monospace' : 'bold 13px monospace';
       ctx.fillText(val, 595, y);
     };
 
     drawRow('NO. INVOICE', invoice.invoiceNumber, 255, true);
-    drawRow('WAKTU PESANAN', `${invoice.date}, ${invoice.time}`, 295);
-    drawRow('METODE BAYAR', 'QRIS (Bank & E-Wallet)', 335);
-    drawRow('STATUS KIRIM', invoice.deliveryType, 375);
+    drawRow('WAKTU PESANAN', `${invoice.date}, ${invoice.time}`, 290);
+    drawRow('PENGIRIM', invoice.senderName, 325);
+    drawRow('METODE BAYAR', 'QRIS (Bank & E-Wallet)', 360);
+    drawRow('HARGA POKOK', invoice.basePriceFormatted, 395);
+    drawRow('KODE UNIK MUTASI', `+Rp ${invoice.uniqueCode}`, 430, true);
 
-    drawDashedLine(410);
+    drawDashedLine(460);
 
     // Item Info
     ctx.textAlign = 'left';
     ctx.fillStyle = '#64748b';
     ctx.font = 'bold 12px sans-serif';
-    ctx.fillText('RINCIAN PRODUK DIGITAL:', 45, 445);
+    ctx.fillText('RINCIAN PRODUK DIGITAL:', 45, 495);
 
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 18px sans-serif';
-    ctx.fillText(invoice.productName, 45, 478);
+    ctx.fillText(invoice.productName, 45, 528);
 
     ctx.fillStyle = '#06b6d4';
     ctx.font = '13px sans-serif';
-    ctx.fillText('Kategori: ' + invoice.category, 45, 506);
+    ctx.fillText('Kategori: ' + invoice.category, 45, 554);
 
-    drawDashedLine(540);
+    drawDashedLine(585);
 
     // Total Amount Row
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 18px sans-serif';
-    ctx.fillText('TOTAL TRANSFER:', 45, 585);
+    ctx.font = '900 17px sans-serif';
+    ctx.fillText('TOTAL TRANSFER MUTASI:', 45, 630);
 
     ctx.textAlign = 'right';
     ctx.fillStyle = '#34d399';
     ctx.font = '900 28px monospace';
-    ctx.fillText(invoice.priceFormatted, 595, 585);
+    ctx.fillText(invoice.priceFormatted, 595, 630);
 
     // Status Box
     ctx.fillStyle = 'rgba(234, 179, 8, 0.12)';
-    ctx.fillRect(45, 625, 550, 52);
+    ctx.fillRect(45, 670, 550, 52);
     ctx.strokeStyle = 'rgba(234, 179, 8, 0.4)';
-    ctx.strokeRect(45, 625, 550, 52);
+    ctx.strokeRect(45, 670, 550, 52);
 
     ctx.fillStyle = '#facc15';
-    ctx.font = 'bold 14px sans-serif';
+    ctx.font = 'bold 13px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('⏳ STATUS: MENUNGGU BUKTI & VERIFIKASI OWNER', 320, 657);
+    ctx.fillText(`⏳ STATUS: MENUNGGU MUTASI KODE UNIK ${invoice.uniqueCode}`, 320, 702);
 
     // Telegram Instructions
     ctx.fillStyle = '#94a3b8';
     ctx.font = '13px sans-serif';
-    ctx.fillText('SERTAKAN STRUK INI & BUKTI TRANSFER KE TELEGRAM:', 320, 715);
+    ctx.fillText('SERTAKAN STRUK INI & SCREENSHOT BUKTI KE TELEGRAM:', 320, 760);
 
     ctx.fillStyle = '#38bdf8';
     ctx.font = 'bold 18px monospace';
-    ctx.fillText(`@${cleanTelegram} (t.me/${cleanTelegram})`, 320, 745);
+    ctx.fillText(`@${cleanTelegram} (t.me/${cleanTelegram})`, 320, 790);
 
-    ctx.fillStyle = '#64748b';
-    ctx.font = '12px sans-serif';
-    ctx.fillText('Owner akan memberikan data/akses produk jika pembayaran sudah sesuai.', 320, 785);
+    ctx.fillStyle = '#ef4444';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText('Owner HANYA memproses pesanan jika dana REAL masuk ke mutasi.', 320, 830);
 
     // Footer
     ctx.fillStyle = '#334155';
     ctx.font = '11px sans-serif';
-    ctx.fillText('Simpan struk ini sebagai referensi resmi transaksi Anda • BrannnXD Store', 320, 885);
+    ctx.fillText('Simpan struk ini sebagai referensi resmi transaksi Anda • BrannnXD Store', 320, 935);
 
     return canvas;
   }

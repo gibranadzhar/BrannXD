@@ -364,8 +364,8 @@ class StoreManager {
     return ['Semua', ...Array.from(categories)];
   }
 
-  // --- INVOICE GENERATOR ---
-  createInvoice(product) {
+  // --- INVOICE GENERATOR WITH ANTI-FRAUD UNIQUE CODE & SENDER PROOF ---
+  createInvoice(product, senderName = 'Pembeli', uniqueCode = 0, proofDataUrl = '') {
     const now = new Date();
     const invoiceNumber = 'INV-BXD-' + Math.floor(100000 + Math.random() * 900000);
     const dateFormatted = now.toLocaleDateString('id-ID', {
@@ -378,20 +378,29 @@ class StoreManager {
       minute: '2-digit'
     }) + ' WIB';
 
+    const basePrice = Number(product.price) || 0;
+    const finalUniqueCode = Number(uniqueCode) || Math.floor(100 + Math.random() * 899);
+    const totalAmount = basePrice + finalUniqueCode;
+
     const invoice = {
       invoiceNumber,
       productId: product.id,
       productName: product.name,
       category: product.category,
-      price: product.price,
-      priceFormatted: this.formatRupiah(product.price),
+      basePrice: basePrice,
+      basePriceFormatted: this.formatRupiah(basePrice),
+      uniqueCode: finalUniqueCode,
+      totalAmount: totalAmount,
+      priceFormatted: this.formatRupiah(totalAmount),
+      senderName: senderName.trim() || 'Pembeli (Nama Tidak Diisi)',
+      proofDataUrl: proofDataUrl || '',
       deliveryType: product.deliveryType || 'Instan Delivery',
       date: dateFormatted,
       time: timeFormatted,
       timestamp: now.toISOString(),
       merchantName: DEFAULT_SETTINGS.qris.merchantName,
       nmid: DEFAULT_SETTINGS.qris.nmid,
-      status: 'MENUNGGU VERIFIKASI OWNER'
+      status: `MENUNGGU VERIFIKASI MUTASI (KODE: ${finalUniqueCode})`
     };
 
     return invoice;
@@ -403,16 +412,17 @@ class StoreManager {
 
     const message = 
 `Halo Owner BrannnXD (@${username})! 👋
-Saya telah melakukan transfer pembayaran via QRIS untuk order berikut:
+Saya telah melakukan transfer pembayaran QRIS dengan rincian berikut:
 
 🧾 *NO. INVOICE:* ${invoice.invoiceNumber}
 📦 *Produk:* ${invoice.productName}
-🏷️ *Kategori:* ${invoice.category}
-💰 *Total Bayar:* ${invoice.priceFormatted}
-🕒 *Waktu Transaksi:* ${invoice.date}, ${invoice.time}
-🏦 *Merchant Tujuan:* ${invoice.merchantName} (${invoice.nmid})
+👤 *Atas Nama Pengirim:* ${invoice.senderName}
+💰 *TOTAL TRANSFER:* ${invoice.priceFormatted}
+🔢 *KODE UNIK MUTASI:* ${invoice.uniqueCode} (Mohon cek mutasi ${invoice.priceFormatted})
+🕒 *Waktu:* ${invoice.date}, ${invoice.time}
+🏦 *Merchant QRIS:* ${invoice.merchantName} (${invoice.nmid})
 
-Lampiran struk & bukti transfer telah saya siapkan di chat ini. Mohon segera diverifikasi untuk pengiriman akses/data produknya ya cuyy. Terima kasih!`;
+Screenshot struk & bukti transfer telah saya siapkan di bawah pesan ini. Mohon dicek mutasi rekeningnya ya cuyy, jika sudah masuk mohon kirim data produknya. Terima kasih!`;
 
     return `https://t.me/${username}?text=${encodeURIComponent(message)}`;
   }
