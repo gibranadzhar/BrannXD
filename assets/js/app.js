@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- Tombol UTAMA: Lihat Produk -->
             <button onclick="window.openDetailModal('${p.id}')" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 hover:from-emerald-400 hover:to-cyan-300 text-black font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 text-center cursor-pointer shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40">
               <i data-lucide="eye" class="w-4 h-4 text-black"></i>
-              <span>Lihat Produk & Pesan</span>
+              <span>Lihat Produk</span>
             </button>
           </div>
         </div>
